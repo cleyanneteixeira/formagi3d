@@ -56,6 +56,47 @@ function payment_ready(): bool {
     return !empty($p['enabled']) && preg_match('/^[A-Za-z0-9_.-]{2,80}$/', (string)($p['handle'] ?? ''));
 }
 
+function normalize_shipping_token(mixed $value): string {
+    if (!is_string($value)) throw new RuntimeException('Token do Melhor Envio inválido.');
+    $token = preg_replace('/^Bearer\s+/i', '', trim($value));
+    // Tokens não podem ser truncados: qualquer alteração invalida a assinatura.
+    if (strlen($token) > 16384) throw new RuntimeException('Token do Melhor Envio muito longo. Cole apenas o token de acesso.');
+    if ($token !== '' && !preg_match('/^[A-Za-z0-9._~+\/-]+=*$/D', $token)) throw new RuntimeException('Token do Melhor Envio inválido. Cole o token completo, sem aspas ou quebras de linha.');
+    return $token;
+}
+
+function normalize_checkout_phone(string $value): string {
+    $value = trim($value);
+    if ($value === '') return '';
+    if (!preg_match('/^\+?[0-9\s().-]+$/D', $value)) throw new RuntimeException('Informe um telefone válido com DDD.');
+    $digits = preg_replace('/\D/', '', $value);
+    if (!str_starts_with($value, '+') && in_array(strlen($digits), [10, 11], true)) $digits = '55' . $digits;
+    if (!preg_match('/^55[1-9][0-9](?:[2-5][0-9]{7}|9[0-9]{8})$/D', $digits)) throw new RuntimeException('Informe um telefone brasileiro válido com DDD, como (11) 99999-9999.');
+    return '+' . $digits;
+}
+
+function infinitepay_error_message(int $status, string $body): string {
+    $message = 'InfinitePay recusou a solicitação (HTTP ' . $status . ').';
+    if ($status !== 422) return $message;
+    // Só identifica nomes de campos conhecidos; nunca devolve dados do comprador
+    // ou o corpo integral da resposta externa para o navegador ou os registros.
+    $labels = ['phone_number'=>'telefone', 'email'=>'e-mail', 'handle'=>'InfiniteTag da loja', 'price'=>'valor dos itens', 'quantity'=>'quantidade dos itens', 'redirect_url'=>'URL de retorno', 'webhook_url'=>'URL de notificação'];
+    $fields = [];
+    $response = json_decode($body, true);
+    $walk = function ($node) use (&$walk, &$fields, $labels): void {
+        if (!is_array($node)) return;
+        foreach ($node as $key=>$value) {
+            foreach ($labels as $field=>$label) {
+                if (preg_match('/(?:^|[.\[\]])' . preg_quote($field, '/') . '(?:$|[.\[\]])/', (string)$key)
+                    || (in_array($key, ['field','param','path'], true) && is_string($value) && preg_match('/(?:^|[.\[\]])' . preg_quote($field, '/') . '(?:$|[.\[\]])/', $value))) $fields[$field] = $label;
+            }
+            $walk($value);
+        }
+    };
+    $walk($response);
+    return $message . ($fields ? ' Confira: ' . implode(', ', $fields) . '.' : ' O provedor não aceitou os dados do pedido; confira os dados do comprador, o valor e a configuração da loja.');
+}
+
 function shipping_quote(string $cep, array $items): array {
     $digits = preg_replace('/\D/', '', $cep);
     if (strlen($digits) !== 8) throw new RuntimeException('Informe um CEP válido com 8 dígitos.');
@@ -78,10 +119,13 @@ function shipping_quote(string $cep, array $items): array {
         $products[]=['id'=>(string)$id,'width'=>(float)$p['widthCm'],'height'=>(float)$p['heightCm'],'length'=>(float)$p['lengthCm'],'weight'=>(float)$p['weightKg'],'insurance_value'=>(float)$p['price'],'quantity'=>$quantity];
     }
     if (!function_exists('curl_init')) throw new RuntimeException('Extensão cURL indisponível no servidor.');
+    $token = normalize_shipping_token($payment['melhorEnvioToken']);
     $ch=curl_init('https://www.melhorenvio.com.br/api/v2/me/shipment/calculate');
-    curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>json_encode(['from'=>['postal_code'=>$payment['originCep']],'to'=>['postal_code'=>$digits],'products'=>$products,'options'=>['receipt'=>false,'own_hand'=>false]],JSON_THROW_ON_ERROR),CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$payment['melhorEnvioToken'],'Content-Type: application/json','Accept: application/json','User-Agent: FormaGi3D ('.$payment['shippingEmail'].')'],CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>20,CURLOPT_CONNECTTIMEOUT=>8]);
+    curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>json_encode(['from'=>['postal_code'=>$payment['originCep']],'to'=>['postal_code'=>$digits],'products'=>$products,'options'=>['receipt'=>false,'own_hand'=>false]],JSON_THROW_ON_ERROR),CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token,'Content-Type: application/json','Accept: application/json','User-Agent: FormaGi3D ('.$payment['shippingEmail'].')'],CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>20,CURLOPT_CONNECTTIMEOUT=>8]);
     $body=curl_exec($ch); $status=curl_getinfo($ch,CURLINFO_HTTP_CODE); $curlNumber=curl_errno($ch); curl_close($ch);
     if(!is_string($body)) throw new RuntimeException('Sem conexão com Melhor Envio (cURL '.$curlNumber.').');
+    if($status===401) throw new RuntimeException('Frete indisponível: o Melhor Envio recusou a autenticação (HTTP 401). A loja precisa salvar novamente um token completo e válido do ambiente de produção.');
+    if($status===403) throw new RuntimeException('Frete indisponível: o token do Melhor Envio não tem acesso à cotação (HTTP 403). A loja precisa revisar as permissões da integração.');
     if($status<200||$status>=300) throw new RuntimeException('Melhor Envio recusou a cotação (HTTP '.$status.').');
     $response=json_decode($body,true);
     if(!is_array($response)) throw new RuntimeException('Resposta inválida do Melhor Envio.');
@@ -163,7 +207,7 @@ function infinitepay_post(string $route, array $payload): array {
     $curlNumber = curl_errno($ch);
     curl_close($ch);
     if (!is_string($body)) throw new RuntimeException('Sem conexão com a InfinitePay (cURL ' . $curlNumber . ').');
-    if ($status < 200 || $status >= 300) throw new RuntimeException('InfinitePay recusou a solicitação (HTTP ' . $status . ').');
+    if ($status < 200 || $status >= 300) throw new RuntimeException(infinitepay_error_message($status, $body));
     $response = json_decode($body, true);
     if (!is_array($response)) throw new RuntimeException('Resposta inválida da InfinitePay.');
     return $response;

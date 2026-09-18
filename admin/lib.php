@@ -153,7 +153,7 @@ function handle_action(array &$content): void {
         if ($origin!=='' && strlen($origin)!==8) throw new RuntimeException('Informe um CEP de origem válido.');
         $email=input('shipping_email', 180);
         if ($email!=='' && !filter_var($email,FILTER_VALIDATE_EMAIL)) throw new RuntimeException('Informe um e-mail válido para o Melhor Envio.');
-        $token=input('melhor_envio_token', 1000);
+        $token=normalize_shipping_token($_POST['melhor_envio_token'] ?? '');
         if ($token!=='') $existing['melhorEnvioToken']=$token;
         $existing['originCep']=$origin;
         $existing['shippingEmail']=$email;

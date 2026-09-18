@@ -18,7 +18,7 @@ try {
     foreach(['name','email'] as $key) if (trim((string)($customer[$key]??''))==='') throw new RuntimeException('Informe seus dados de contato.');
     if (!filter_var($customer['email'],FILTER_VALIDATE_EMAIL)) throw new RuntimeException('E-mail inválido.');
     foreach(['street','number','city','state','cep'] as $key) if(trim((string)($shipping[$key]??''))==='') throw new RuntimeException('Informe o endereço completo.');
-    $customer=['name'=>mb_substr(trim((string)$customer['name']),0,120),'email'=>mb_substr(trim((string)$customer['email']),0,180),'phone'=>mb_substr(trim((string)($customer['phone']??'')),0,30)];
+    $customer=['name'=>mb_substr(trim((string)$customer['name']),0,120),'email'=>mb_substr(trim((string)$customer['email']),0,180),'phone'=>normalize_checkout_phone((string)($customer['phone']??''))];
     $shipping=array_intersect_key($shipping,array_flip(['street','number','complement','city','state','cep']));
     foreach($shipping as &$v) $v=mb_substr(trim((string)$v),0,180); unset($v);
     if (!preg_match('/^[0-9]{8}$/',preg_replace('/\D/','',$shipping['cep']))) throw new RuntimeException('CEP inválido.');

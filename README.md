@@ -26,3 +26,19 @@ Para instalar em outro ambiente, configure os dados privados separadamente. O pr
 Preserve os dados privados existentes ao atualizar a hospedagem. Configure permissões de escrita nas pastas usadas pelo painel e mantenha `.private/` inacessível por HTTP. A configuração `php.ini` específica do servidor também fica fora do Git.
 
 O envio ao GitHub não executa pagamentos nem publica automaticamente a loja na hospedagem.
+
+## Correção de checkout e frete — 18/09/2026
+
+- O telefone brasileiro é normalizado para `+55` + DDD + número antes de gerar o link da InfinitePay; um telefone opcional vazio continua omitido.
+- O token do Melhor Envio não é mais cortado em 1.000 caracteres. Entradas excessivas ou malformadas são rejeitadas sem substituir a configuração salva.
+- Respostas de erro distinguem falhas de autenticação/permissão do frete e identificam campos de validação da InfinitePay quando fornecidos, sem expor os dados retornados do comprador.
+
+Após atualizar `admin/commerce.php`, `admin/lib.php` e `api/checkout.php` na hospedagem, abra o painel em **Pagamento e frete** e salve novamente o token **completo, válido e de produção** do Melhor Envio. A parte que a versão anterior cortou não pode ser recuperada do arquivo salvo. Deixar o campo vazio mantém o token anterior.
+
+O erro 422 antigo não incluía os detalhes retornados pela InfinitePay, portanto a confirmação do pagamento exige uma nova tentativa após a atualização. Não foi alterado o valor dos produtos ou o status de pagamento dos pedidos existentes.
+
+Teste local, sem chamadas externas e com configurações temporárias isoladas:
+
+```sh
+php tests/commerce-regression.php
+```
