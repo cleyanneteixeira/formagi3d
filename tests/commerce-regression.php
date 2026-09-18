@@ -43,6 +43,22 @@ try {
     same(str_contains(infinitepay_error_message(422, '{"errors":[{"field":"customer.email","message":"invalid"}]}'), 'e-mail'), true, 'lista de campos identificada');
     same(str_contains(infinitepay_error_message(422, '<html>invalid</html>'), 'não aceitou'), true, 'erro sem JSON tem mensagem segura');
 
+    // Respostas simuladas: valida o diagnóstico sem atribuir essas causas à loja.
+    same(str_contains(infinitepay_error_message(422, '{"error":"Invalid handle"}'), 'Invalid handle'), true, 'erro textual simples da InfinitePay');
+    same(str_contains(infinitepay_error_message(422, '{"message":"Order amount is below the minimum"}'), 'below the minimum'), true, 'motivo de valor preservado');
+    $shippingMessage = shipping_error_message(422, '{"message":"The given data was invalid.","errors":{"from.postal_code":["Invalid postal code 65000001"],"products.0.insurance_value":["Value must be at least 1"]}}', ['from'=>['postal_code'=>'65000001']]);
+    same(str_contains($shippingMessage, 'from.postal_code'), true, 'campo de CEP indicado');
+    same(str_contains($shippingMessage, 'products.0.insurance_value'), true, 'campo de valor segurado indicado');
+    same(str_contains($shippingMessage, 'at least 1'), true, 'restrição numérica preservada');
+    same(str_contains($shippingMessage, '65000001'), false, 'CEP não exposto');
+    same(str_contains(shipping_error_message(401, '{"message":"secret"}'), 'autenticação'), true, '401 continua distinto de validação');
+    same(str_contains(shipping_error_message(403, ''), 'permissões'), true, '403 continua distinto');
+    $detail = provider_validation_details(json_encode(['errors'=>['message'=>'Invalid Maria Exemplo maria@example.com +5511999999999 at 65000-001', 'input'=>'unrelated personal input', 'access_token'=>'private-token', 'client_secret'=>'private-secret']], JSON_THROW_ON_ERROR), ['name'=>'Maria Exemplo','phone'=>'+5511999999999','cep'=>'65000001']);
+    foreach (['Maria Exemplo','maria@example.com','5511999999999','65000-001','unrelated personal input','private-token','private-secret'] as $sensitiveValue) same(str_contains($detail, $sensitiveValue), false, 'informação privada removida');
+    same(provider_validation_details('<html>Proxy failure</html>'), '', 'HTML externo ignorado');
+    same(str_contains(provider_validation_details('{"error":"<script>alert(1)</script>Invalid value"}'), '<script>'), false, 'tags removidas');
+    same(mb_strlen(provider_validation_details(json_encode(['errors'=>array_fill(0, 20, str_repeat('x', 1000))]))) <= 1600, true, 'diagnóstico limitado');
+
     save_private_json(PAYMENT_FILE, ['freeShippingRanges'=>[['from'=>65000001,'to'=>65099999]]]);
     foreach (['65000-001','65050-000','65099-999'] as $cep) {
         $quote = shipping_quote($cep, [['id'=>1,'quantity'=>1]]);

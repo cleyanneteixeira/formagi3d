@@ -42,3 +42,9 @@ Teste local, sem chamadas externas e com configurações temporárias isoladas:
 ```sh
 php tests/commerce-regression.php
 ```
+
+### Diagnóstico dos erros 422
+
+Se o erro persistir, a mensagem agora inclui `Motivo informado:` com as explicações textuais de validação retornadas pela InfinitePay ou pelo Melhor Envio, inclusive erros que chegam apenas em `message` ou `error`. Dados enviados do comprador, tokens e campos de entrada ecoados são ocultados. Respostas não estruturadas continuam recebendo uma mensagem genérica.
+
+Esta mudança melhora o diagnóstico; não comprova nem corrige, por si só, a causa de uma rejeição do provedor. Atualize `admin/commerce.php` e repita as duas tentativas para obter o motivo. O preço dos produtos, o valor segurado e as configurações comerciais não foram alterados. Não há chamadas externas nem cobranças nos testes automatizados.

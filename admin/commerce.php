@@ -75,11 +75,64 @@ function normalize_checkout_phone(string $value): string {
     return '+' . $digits;
 }
 
-function infinitepay_error_message(int $status, string $body): string {
+function provider_validation_details(string $body, array $request = []): string {
+    $response = json_decode($body, true);
+    if (!is_array($response)) return '';
+    $messages = [];
+    $collect = function ($value, string $path = '', int $depth = 0) use (&$collect, &$messages): void {
+        if ($depth > 8 || count($messages) >= 6) return;
+        if (is_string($value) && trim($value) !== '') {
+            $messages[] = ($path !== '' ? $path . ': ' : '') . mb_substr(trim($value), 0, 600);
+        } elseif (is_array($value)) {
+            foreach ($value as $key=>$entry) {
+                // Não inclui valores do pedido eventualmente ecoados na validação.
+                if (in_array($key, ['input','value','payload','request','customer','context','ctx'], true) || preg_match('/token|secret|password|authorization|credential/i', (string)$key)) continue;
+                $next = is_int($key) || in_array($key, ['message','msg','error','detail'], true) ? $path : ($path !== '' ? $path . '.' : '') . $key;
+                $collect($entry, $next, $depth + 1);
+            }
+        }
+    };
+    foreach (['message','error','errors','detail','details'] as $key) {
+        if (isset($response[$key])) $collect($response[$key]);
+    }
+    $text = implode(' | ', array_unique($messages));
+    // Redige valores enviados antes de exibir a explicação do provedor.
+    $sensitive = [];
+    $gather = function ($node) use (&$gather, &$sensitive): void {
+        if (is_array($node)) { foreach ($node as $value) $gather($value); }
+        elseif (is_string($node) && strlen($node) >= 3) {
+            $sensitive[] = $node;
+            if (preg_match('/^[+0-9().\s-]+$/D', $node)) {
+                $digits = preg_replace('/\D/', '', $node);
+                if (strlen($digits) >= 8) $sensitive[] = $digits;
+                if (strlen($digits) === 8) $sensitive[] = substr($digits, 0, 5) . '-' . substr($digits, 5);
+                if (str_starts_with($digits, '55') && strlen($digits) >= 12) $sensitive[] = substr($digits, 2);
+            }
+        }
+    };
+    $gather($request);
+    usort($sensitive, fn($a,$b)=>strlen($b)<=>strlen($a));
+    $text = str_ireplace($sensitive, '[oculto]', $text);
+    $text = preg_replace('/\bBearer\s+\S+|\beyJ[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+){1,2}\b/i', '[credencial oculta]', $text);
+    $text = preg_replace('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i', '[e-mail oculto]', $text);
+    $text = preg_replace('/(?<!\d)\+?\d{10,15}(?!\d)/', '[número oculto]', $text);
+    $text = preg_replace('/[\x00-\x1F\x7F]/', ' ', strip_tags($text));
+    return mb_substr($text, 0, 1600);
+}
+
+function shipping_error_message(int $status, string $body, array $request = []): string {
+    if ($status === 401) return 'Frete indisponível: o Melhor Envio recusou a autenticação (HTTP 401). A loja precisa salvar novamente um token completo e válido do ambiente de produção.';
+    if ($status === 403) return 'Frete indisponível: o token do Melhor Envio não tem acesso à cotação (HTTP 403). A loja precisa revisar as permissões da integração.';
+    $message = 'Melhor Envio recusou a cotação (HTTP ' . $status . ').';
+    $details = $status === 422 ? provider_validation_details($body, $request) : '';
+    return $message . ($details !== '' ? ' Motivo informado: ' . $details : '');
+}
+
+function infinitepay_error_message(int $status, string $body, array $request = []): string {
     $message = 'InfinitePay recusou a solicitação (HTTP ' . $status . ').';
     if ($status !== 422) return $message;
-    // Só identifica nomes de campos conhecidos; nunca devolve dados do comprador
-    // ou o corpo integral da resposta externa para o navegador ou os registros.
+    // Identifica campos conhecidos e usa somente a explicação sanitizada,
+    // sem devolver o corpo integral da resposta externa.
     $labels = ['phone_number'=>'telefone', 'email'=>'e-mail', 'handle'=>'InfiniteTag da loja', 'price'=>'valor dos itens', 'quantity'=>'quantidade dos itens', 'redirect_url'=>'URL de retorno', 'webhook_url'=>'URL de notificação'];
     $fields = [];
     $response = json_decode($body, true);
@@ -94,7 +147,9 @@ function infinitepay_error_message(int $status, string $body): string {
         }
     };
     $walk($response);
-    return $message . ($fields ? ' Confira: ' . implode(', ', $fields) . '.' : ' O provedor não aceitou os dados do pedido; confira os dados do comprador, o valor e a configuração da loja.');
+    $details = provider_validation_details($body, $request);
+    if ($details !== '') return $message . ($fields ? ' Confira: ' . implode(', ', $fields) . '.' : '') . ' Motivo informado: ' . $details;
+    return $message . ($fields ? ' Confira: ' . implode(', ', $fields) . '.' : ' O provedor não aceitou os dados do pedido e não informou o motivo na resposta.');
 }
 
 function shipping_quote(string $cep, array $items): array {
@@ -120,13 +175,12 @@ function shipping_quote(string $cep, array $items): array {
     }
     if (!function_exists('curl_init')) throw new RuntimeException('Extensão cURL indisponível no servidor.');
     $token = normalize_shipping_token($payment['melhorEnvioToken']);
+    $payload = ['from'=>['postal_code'=>$payment['originCep']],'to'=>['postal_code'=>$digits],'products'=>$products,'options'=>['receipt'=>false,'own_hand'=>false]];
     $ch=curl_init('https://www.melhorenvio.com.br/api/v2/me/shipment/calculate');
-    curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>json_encode(['from'=>['postal_code'=>$payment['originCep']],'to'=>['postal_code'=>$digits],'products'=>$products,'options'=>['receipt'=>false,'own_hand'=>false]],JSON_THROW_ON_ERROR),CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token,'Content-Type: application/json','Accept: application/json','User-Agent: FormaGi3D ('.$payment['shippingEmail'].')'],CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>20,CURLOPT_CONNECTTIMEOUT=>8]);
+    curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>json_encode($payload,JSON_THROW_ON_ERROR),CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$token,'Content-Type: application/json','Accept: application/json','User-Agent: FormaGi3D ('.$payment['shippingEmail'].')'],CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>20,CURLOPT_CONNECTTIMEOUT=>8]);
     $body=curl_exec($ch); $status=curl_getinfo($ch,CURLINFO_HTTP_CODE); $curlNumber=curl_errno($ch); curl_close($ch);
     if(!is_string($body)) throw new RuntimeException('Sem conexão com Melhor Envio (cURL '.$curlNumber.').');
-    if($status===401) throw new RuntimeException('Frete indisponível: o Melhor Envio recusou a autenticação (HTTP 401). A loja precisa salvar novamente um token completo e válido do ambiente de produção.');
-    if($status===403) throw new RuntimeException('Frete indisponível: o token do Melhor Envio não tem acesso à cotação (HTTP 403). A loja precisa revisar as permissões da integração.');
-    if($status<200||$status>=300) throw new RuntimeException('Melhor Envio recusou a cotação (HTTP '.$status.').');
+    if($status<200||$status>=300) throw new RuntimeException(shipping_error_message($status, $body, [$payload, $token, $payment['shippingEmail']]));
     $response=json_decode($body,true);
     if(!is_array($response)) throw new RuntimeException('Resposta inválida do Melhor Envio.');
     $options=[];
@@ -207,7 +261,7 @@ function infinitepay_post(string $route, array $payload): array {
     $curlNumber = curl_errno($ch);
     curl_close($ch);
     if (!is_string($body)) throw new RuntimeException('Sem conexão com a InfinitePay (cURL ' . $curlNumber . ').');
-    if ($status < 200 || $status >= 300) throw new RuntimeException(infinitepay_error_message($status, $body));
+    if ($status < 200 || $status >= 300) throw new RuntimeException(infinitepay_error_message($status, $body, $payload));
     $response = json_decode($body, true);
     if (!is_array($response)) throw new RuntimeException('Resposta inválida da InfinitePay.');
     return $response;
