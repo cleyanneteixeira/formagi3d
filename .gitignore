@@ -1,0 +1,23 @@
+# Configurações privadas, autenticação e pedidos
+/.private/*
+!/.private/.htaccess
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Configuração específica do servidor e validações de domínio
+/php.ini
+/.well-known/
+/cgi-bin/
+
+# Arquivos locais, logs e backups
+*.log
+*.zip
+*.tar.gz
+*.bak
+.DS_Store
+Thumbs.db
+/node_modules/
+

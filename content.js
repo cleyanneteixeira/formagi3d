@@ -1,0 +1,239 @@
+window.FORMAGI_CONTENT={
+    "version": 1,
+    "settings": {
+        "storeName": "Formagi3D",
+        "tagline": "Ideias ganham forma.",
+        "location": "São Luís - MA",
+        "email": "",
+        "whatsapp": "",
+        "instagram": "",
+        "heroEyebrow": "CRIATIVIDADE EM CADA CAMADA",
+        "heroTitle": "MAIS QUE OBJETOS, HISTÓRIAS EM 3D.",
+        "heroDescription": "Brinquedos, decoração, personalizados e muito mais. Sua ideia ganha forma com a magia da impressão 3D.",
+        "catalogNote": "Catálogo demonstrativo baseado na proposta visual. Valores e disponibilidade sujeitos à confirmação."
+    },
+    "banners": [
+        {
+            "id": "hero",
+            "name": "Banner principal",
+            "image": "assets/banner-personagem-limpo.jpg",
+            "enabled": true
+        },
+        {
+            "id": "personal",
+            "name": "Faixa de personalizados",
+            "image": "assets/promo-personal.jpg",
+            "enabled": true
+        },
+        {
+            "id": "gift",
+            "name": "Faixa de presentes",
+            "image": "assets/promo-gift.jpg",
+            "enabled": true
+        }
+    ],
+    "categories": [
+        {
+            "id": "brinquedos",
+            "name": "Brinquedos",
+            "subtitle": "Diversão em 3D",
+            "image": "uploads/19978b2d01832ab24c7de6dd49c7884a.png",
+            "enabled": true
+        },
+        {
+            "id": "decoracao",
+            "name": "Decoração",
+            "subtitle": "Ambientes únicos",
+            "image": "uploads/bfb1b1394fb7aaa0af46ffddc05c79f5.png",
+            "enabled": true
+        },
+        {
+            "id": "personalizados",
+            "name": "Personalizados",
+            "subtitle": "Seu nome, sua ideia",
+            "image": "uploads/dbdeb6f3ec8e55508cefc0780a3ce10a.png",
+            "enabled": true
+        },
+        {
+            "id": "geek",
+            "name": "Geek \u0026 Colecionáveis",
+            "subtitle": "Para todas as idades",
+            "image": "uploads/8896602045ab40233e6fa103c385cc34.png",
+            "enabled": true
+        },
+        {
+            "id": "utilidades",
+            "name": "Utilidades",
+            "subtitle": "Soluções do dia a dia",
+            "image": "uploads/a0e09a80cd3d4feb704cc9d92aefb888.png",
+            "enabled": true
+        },
+        {
+            "id": "festas-lembrancinhas",
+            "name": "Festas \u0026 Lembrancinhas",
+            "subtitle": "Detalhes para celebrar",
+            "image": "uploads/889cf226e10edc14c33d7678964fee90.png",
+            "enabled": true
+        }
+    ],
+    "products": [
+        {
+            "id": 1,
+            "name": "Dragão Articulado",
+            "price": 89.9,
+            "category": "brinquedos",
+            "badge": "Mais vendido",
+            "color": "#f02270",
+            "reviews": 128,
+            "featured": true,
+            "active": true,
+            "description": "Dragão totalmente articulado, impresso em uma peça só — as juntas já saem soltas e prontas para brincar, sem parafusos ou colas.",
+            "specs": {
+                "Material": "PLA rígido",
+                "Altura": "≈ 22 cm",
+                "Impressão": "Peça única, sem montagem"
+            },
+            "images": [
+                "assets/products/dragao.jpg"
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Luminária Cacto",
+            "price": 79.9,
+            "category": "decoracao",
+            "badge": "Novidade",
+            "color": "#15803d",
+            "reviews": 64,
+            "featured": true,
+            "active": true,
+            "description": "Luminária em formato de cacto com LED embutido — um toque de bom humor pra mesa de cabeceira, escritório ou estante.",
+            "specs": {
+                "Material": "PLA translúcido",
+                "Altura": "≈ 18 cm",
+                "Alimentação": "USB (cabo incluso)"
+            },
+            "images": [
+                "assets/products/luminaria.jpg"
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Nome Personalizado",
+            "price": 49.9,
+            "category": "personalizados",
+            "badge": "Personalizável",
+            "color": "#087fa0",
+            "reviews": 52,
+            "featured": true,
+            "active": true,
+            "description": "Nome ou palavra impressos em 3D com base de apoio — um presente único, feito sob medida pra quem vai receber.",
+            "specs": {
+                "Material": "PLA colorido",
+                "Personalização": "Até 12 caracteres",
+                "Prazo": "Combinado no atendimento"
+            },
+            "images": [
+                "assets/products/nome.jpg"
+            ]
+        },
+        {
+            "id": 4,
+            "name": "Mario Bros 3D",
+            "price": 69.9,
+            "category": "geek",
+            "badge": "Colecionável",
+            "color": "#d78500",
+            "reviews": 97,
+            "featured": true,
+            "active": true,
+            "description": "Réplica colecionável do personagem, com acabamento pintado nos detalhes — ideal pra quem coleciona cultura pop e games.",
+            "specs": {
+                "Material": "PLA multicor",
+                "Altura": "≈ 12 cm",
+                "Acabamento": "Pintura manual nos detalhes"
+            },
+            "images": [
+                "assets/products/mario.jpg"
+            ]
+        },
+        {
+            "id": 5,
+            "name": "Vaso Geométrico",
+            "price": 39.9,
+            "category": "decoracao",
+            "badge": "Decoração",
+            "color": "#178046",
+            "reviews": 33,
+            "featured": true,
+            "active": true,
+            "description": "Vaso de linhas geométricas, leve e resistente — combina com suculentas e plantas pequenas em qualquer cantinho da casa.",
+            "specs": {
+                "Material": "PLA",
+                "Diâmetro": "≈ 10 cm",
+                "Uso": "Ambiente interno"
+            },
+            "images": [
+                "assets/products/vaso.jpg"
+            ]
+        },
+        {
+            "id": 6,
+            "name": "Organizador de Mesa",
+            "price": 54.9,
+            "category": "utilidades",
+            "badge": "Utilidade",
+            "color": "#087fa0",
+            "reviews": 48,
+            "featured": true,
+            "active": true,
+            "description": "Organizador modular para canetas, clipes e outros itens de mesa — feito para manter o espaço de trabalho em ordem.",
+            "specs": {
+                "Material": "PLA",
+                "Compartimentos": "4",
+                "Dimensões": "≈ 14×10×9 cm"
+            },
+            "images": [
+                "assets/products/organizador.jpg"
+            ]
+        },
+        {
+            "id": 7,
+            "name": "Topo de Bolo Personalizado em 3D",
+            "price": 49.9,
+            "category": "festas-lembrancinhas",
+            "badge": "Personalizável",
+            "color": "#ff008a",
+            "reviews": 0,
+            "featured": true,
+            "active": true,
+            "description": "Deixe a comemoração ainda mais especial com um topo de bolo impresso em 3D. Escolha nome, idade e cores para criar uma peça única para a sua festa.",
+            "specs": {
+                "Personalização": "nome, tema, idade e cores; material e tamanho: conforme o modelo produzido."
+            },
+            "images": [
+                "uploads/452260462e46cae1a5010403a2bf47f7.png"
+            ]
+        },
+        {
+            "id": 8,
+            "name": "Produto teste",
+            "price": 0.1,
+            "category": "festas-lembrancinhas",
+            "badge": "TESTE",
+            "color": "#ff0000",
+            "reviews": 0,
+            "featured": false,
+            "active": true,
+            "description": "Descrição Teste",
+            "specs": [],
+            "images": [
+                "uploads/3282fedb70b29fd9b134e4182e3ea38a.jpg"
+            ],
+            "weightKg": 0.2,
+            "widthCm": 15,
+            "heightCm": 20,
+            "lengthCm": 15
+        }
+    ]
+};

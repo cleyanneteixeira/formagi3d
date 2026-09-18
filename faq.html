@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Perguntas frequentes | Formagi3D</title>
+<meta name="description" content="Tire suas dúvidas sobre a Formagi3D.">
+<meta name="theme-color" content="#111111"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css">
+<script src="content.js" defer></script><script src="shared.js" defer></script>
+</head>
+<body data-page="faq">
+<a class="skip" href="#conteudo">Ir para o conteúdo</a>
+<header><div class="header-main wrap">
+<a class="brand" href="index.html" aria-label="Formagi3D — início"><span class="crop logo" role="img" aria-label="Formagi3D, ideias ganham forma"></span></a>
+<form class="search" role="search"><input id="search" type="search" placeholder="O que você está procurando?" aria-label="Buscar produtos"><button aria-label="Buscar" type="submit" data-icon="search"></button></form>
+<button class="account header-action" data-info="account"><span data-icon="user"></span><span><small>Bem-vindo!</small>Minha conta</span></button>
+<button class="header-action cart-open" aria-label="Abrir meu carrinho"><span class="cart-symbol"><span data-icon="cart"></span><b id="cart-count">0</b></span><span><small>Meu carrinho</small><strong id="cart-total">R$ 0,00</strong></span></button>
+</div><nav class="wrap nav" aria-label="Categorias de produtos"><button class="all" data-category="Todos"><span data-icon="menu"></span>Todas as categorias</button><button data-category="brinquedos">Brinquedos</button><button data-category="decoracao">Decoração</button><button data-category="personalizados">Personalizados</button><button data-category="utilidades">Casa</button><button data-category="Presentes">Presentes</button><button data-category="geek">Coleções</button><button data-category="Novidades">Novidades</button></nav></header>
+<main id="conteudo">
+<div class="wrap breadcrumb"><a href="index.html">Início</a><span aria-hidden="true">/</span><b>Perguntas frequentes</b></div>
+<section class="wrap prose" style="padding-bottom:10px">
+<h1>Perguntas frequentes</h1>
+</section>
+<section class="wrap faq-list">
+<details><summary>Os produtos estão à venda de verdade?</summary><p>Não ainda. Este catálogo reproduz a proposta visual da loja. Imagens, avaliações e preços são ilustrativos, e o catálogo final precisa ser confirmado antes do lançamento.</p></details>
+<details><summary>Posso personalizar uma peça?</summary><p>A proposta inclui itens personalizados, como o nome impresso em 3D. Cores, medidas e nomes serão combinados no atendimento quando a loja estiver disponível.</p></details>
+<details><summary>Como funciona o carrinho desta demonstração?</summary><p>O carrinho fica salvo no seu navegador e some se você limpar os dados do site. Nenhum pedido é enviado, cobrado ou entregue de verdade.</p></details>
+<details><summary>Vocês entregam pra todo o Brasil?</summary><p>Esse é o plano para quando a loja estiver no ar. Prazos e valores de frete ainda serão definidos.</p></details>
+<details><summary>Como faço trocas ou devoluções?</summary><p>Veja os detalhes na página de <a href="trocas.html">trocas e devoluções</a>.</p></details>
+</section>
+
+</main>
+<footer><div class="footer-top wrap"><div><span class="eyebrow">DO PRIMEIRO RASCUNHO À ÚLTIMA CAMADA</span><h2>Juntos, criamos <span>mais histórias.</span></h2></div><a href="produtos.html" class="button">Encontre sua próxima ideia →</a></div><div class="wrap newsletter"><div><h3>Receba novidades e ofertas exclusivas</h3><p>Cadastre seu e-mail e fique por dentro de tudo.</p></div><form id="newsletter-form"><input id="newsletter-email" type="email" required placeholder="Seu melhor e-mail" aria-label="Seu melhor e-mail"><button class="button" type="submit">Cadastrar</button></form></div><div class="footer-main wrap"><a class="brand footer-brand" href="index.html" aria-label="Voltar ao início"><span class="crop logo" role="img" aria-label="Formagi3D"></span></a><div><h3>Explore</h3><a href="produtos.html">Todos os produtos</a><a href="index.html#categorias">Categorias</a><a href="produtos.html?categoria=personalizados">Personalizados</a></div><div><h3>Ajuda</h3><a href="como-comprar.html">Como comprar</a><a href="faq.html">Perguntas frequentes</a><a href="trocas.html">Trocas e devoluções</a><a href="rastreio.html">Rastrear pedido</a></div><div><h3>Institucional</h3><a href="sobre.html">Sobre nós</a><a href="contato.html">Fale conosco</a><a href="privacidade.html">Política de privacidade</a><a href="termos.html">Termos de uso</a></div><div><h3>Redes sociais</h3><div class="social-links"><a href="#" aria-label="Formagi3D no Instagram" data-icon="instagram"></a><a href="#" aria-label="Formagi3D no YouTube" data-icon="youtube"></a><a href="#" aria-label="Formagi3D no TikTok" data-icon="tiktok"></a><a href="#" aria-label="Formagi3D no WhatsApp" data-icon="whatsapp"></a></div></div><div><h3>Formagi3D</h3><p>Ideias ganham forma.</p><p>Criatividade · Tecnologia<br>Personalização sem limites</p><p class="footer-location"><span data-icon="pin"></span>São Luís - MA</p></div></div><div class="footer-bottom wrap"><span>© <span id="year"></span> Formagi3D. Todos os direitos reservados.</span><span>Site desenvolvido pela <strong>TrincaDev</strong>.</span></div></footer>
+<dialog id="cart-dialog" class="cart-dialog"><div class="dialog-heading"><h2>Meu carrinho <span id="dialog-count"></span></h2><button class="close icon-button" aria-label="Fechar carrinho">×</button></div><div id="cart-items"></div><div id="cart-summary"><div class="subtotal"><span>Subtotal</span><strong id="subtotal"></strong></div><p>Frete e disponibilidade ainda não calculados.</p><button class="button checkout">Continuar pedido →</button></div><button class="text-button close continue">Continuar explorando</button></dialog>
+<dialog id="info-dialog"><div class="dialog-heading"><h2 id="info-title"></h2><button class="close icon-button" aria-label="Fechar">×</button></div><div id="info-content"></div><button class="button close">Entendi</button></dialog><div id="toast" role="status" aria-live="polite"></div>
+</body></html>
+
+
